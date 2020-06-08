@@ -78,7 +78,7 @@ class TodoListViewController: UITableViewController {
     //MARK: - Saving Items
     func saveItems() {
         
-          do {
+        do {
             try context.save()
         } catch {
             print("error in saving context \(error)")
@@ -87,13 +87,38 @@ class TodoListViewController: UITableViewController {
     }
     
     //MARK: - Loading Items
-    func loadItems() {
-        let request : NSFetchRequest<Item> = Item.fetchRequest()
+    func loadItems(with request : NSFetchRequest<Item> = Item.fetchRequest()) {
+        
         do {
             itemArray = try context.fetch(request)
         } catch {
             print("Error in fetching items \(error)")
         }
+        tableView.reloadData()
     }
+}
+
+//MARK: - SearchBar Delegate
+extension TodoListViewController : UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        
+        loadItems(with : request)
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0 {
+            loadItems()
+            
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+        }
+    }
+    
 }
 
