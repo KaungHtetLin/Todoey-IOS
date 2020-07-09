@@ -11,7 +11,11 @@ import Foundation
 struct K {
     
     static let todoCellIdentifier = "ToDoItemCell"
+    static let categoryCellIdentifier = "CategoryCell"
+    
     static let todoListKey = "TodoListKey"
     
     static let ItemPathName = "Items.plist"
+    
+    static let itemIdentifier = "goToItems"
 }
