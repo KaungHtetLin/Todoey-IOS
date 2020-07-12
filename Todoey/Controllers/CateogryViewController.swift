@@ -7,13 +7,13 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 class CateogryViewController: UITableViewController {
     
-    var catArray = [Category]()
+    let realm = try! Realm()
     
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    var catArray : Results<Category>?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,14 +23,13 @@ class CateogryViewController: UITableViewController {
     
     //MARK: - TableView DataSource
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return catArray.count
+        return catArray?.count ?? 1
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: K.categoryCellIdentifier,for: indexPath)
         
-        let cat = catArray[indexPath.row]
-        cell.textLabel?.text = cat.name
+        cell.textLabel?.text = catArray?[indexPath.row].name ?? "No Cateogry Added Yet"
         
         return cell
     }
@@ -44,7 +43,7 @@ class CateogryViewController: UITableViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let destinationVC = segue.destination as! TodoListViewController
         if let indexPath = tableView.indexPathForSelectedRow{
-            destinationVC.selectedCategory = catArray[indexPath.row]
+            destinationVC.selectedCategory = catArray?[indexPath.row]
         }
     }
     
@@ -58,10 +57,9 @@ class CateogryViewController: UITableViewController {
             if let catName = textField.text {
                 if catName.count > 0 {
                     
-                    let newCat = Category(context: self.context)
+                    let newCat = Category()
                     newCat.name = catName
-                    self.catArray.append(newCat)
-                    self.saveCategory()
+                    self.save(category: newCat)
                 }
             }
         }
@@ -77,24 +75,23 @@ class CateogryViewController: UITableViewController {
     }
     
     //MARK: - Saving Cateogry
-    func saveCategory() {
+    func save(category : Category) {
         
         do {
-            try context.save()
+            try realm.write{
+                realm.add(category)
+            }
         } catch {
-            print("error in saving context \(error)")
+            print("error in saving data \(error)")
         }
         self.tableView.reloadData()
     }
     
     //MARK: - Loading Cateogry
-    func loadCategory(with request : NSFetchRequest<Category> = Category.fetchRequest()) {
+    func loadCategory() {
+
+        catArray = realm.objects(Category.self)
         
-        do {
-            catArray = try context.fetch(request)
-        } catch {
-            print("Error in fetching category \(error)")
-        }
         tableView.reloadData()
     }
 }

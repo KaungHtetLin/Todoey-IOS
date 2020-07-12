@@ -18,4 +18,8 @@ struct K {
     static let ItemPathName = "Items.plist"
     
     static let itemIdentifier = "goToItems"
+    
+    struct Data {
+        static let itemProperty = "items"
+    }
 }
